@@ -1,4 +1,8 @@
 // Vercel descobre funções serverless em /api/*.
-// Este arquivo é um wrapper que reusa o handler real do NestJS,
-// que vive dentro do monorepo em apps/api/api/index.ts.
-export { default } from '../apps/api/api/index';
+// Apontamos para o JS já compilado pelo `nest build`, não o TS fonte —
+// senão o @vercel/node retranspila o grafo NestJS com decorators Stage 3
+// (TS 5.x default), e os decorators legacy quebram em runtime.
+// O `npm run build` da raiz garante que apps/api/dist/ existe antes do
+// Vercel detectar as functions.
+// @ts-ignore - dist é gerado em build-time (gitignored)
+export { default } from '../apps/api/dist/api/index.js';
