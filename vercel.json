@@ -5,7 +5,8 @@
   "installCommand": "npm install --include=dev --no-audit --no-fund",
   "framework": null,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" }
+    { "source": "/api/(.*)", "destination": "/api/index" },
+    { "source": "/:path*", "destination": "/index.html" }
   ],
   "functions": {
     "api/index.ts": {
