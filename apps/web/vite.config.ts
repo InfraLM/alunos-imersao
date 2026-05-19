@@ -10,9 +10,7 @@ export default defineConfig({
     },
   },
   build: {
-    // Saída para `dist/` na raiz do monorepo — a Vercel acha lá por convenção
-    // mesmo quando alguma configuração do painel sobrepõe `vercel.json#outputDirectory`.
-    outDir: '../../dist',
+    outDir: 'dist',
     emptyOutDir: true,
   },
   server: {
