@@ -1,0 +1,55 @@
+// =============================================================================
+// Schema Prisma - Banco IMERSAO-ALUNO (exclusivo deste app, schema public)
+// Pode usar migrations livremente — banco não compartilhado.
+// =============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_IMERSAO")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../../node_modules/@prisma-clients/imersao"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+model ImersaoOtp {
+  matricula  String   @id @db.VarChar
+  codigoHash String   @map("codigo_hash") @db.VarChar
+  expiraEm   DateTime @map("expira_em") @db.Timestamptz(6)
+  tentativas Int      @default(0)
+  criadoEm   DateTime @default(now()) @map("criado_em") @db.Timestamptz(6)
+
+  @@index([expiraEm])
+  @@map("imersao_otp")
+}
+
+model EmailLog {
+  id           BigInt   @id @default(autoincrement())
+  matricula    String?  @db.VarChar
+  destinatario String   @db.VarChar
+  tipo         String   @db.VarChar
+  status       String   @db.VarChar
+  providerId   String?  @map("provider_id") @db.VarChar
+  erro         String?
+  criadoEm     DateTime @default(now()) @map("criado_em") @db.Timestamptz(6)
+
+  @@index([matricula, criadoEm(sort: Desc)])
+  @@index([criadoEm(sort: Desc)])
+  @@map("email_log")
+}
+
+model AccessLog {
+  id        BigInt   @id @default(autoincrement())
+  matricula String?  @db.VarChar
+  ip        String?  @db.VarChar
+  userAgent String?  @map("user_agent")
+  evento    String   @db.VarChar
+  detalhe   String?
+  criadoEm  DateTime @default(now()) @map("criado_em") @db.Timestamptz(6)
+
+  @@index([matricula, criadoEm(sort: Desc)])
+  @@index([criadoEm(sort: Desc)])
+  @@map("access_log")
+}

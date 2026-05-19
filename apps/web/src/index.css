@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-app: 0 0% 98%;
+    --bg-card: 0 0% 100%;
+    --bg-ink: 0 0% 4%;
+    --bg-ink-soft: 240 4% 11%;
+
+    --ink: 0 0% 4%;
+    --ink-2: 240 6% 15%;
+    --muted: 240 5% 46%;
+    --muted-2: 240 5% 65%;
+    --on-ink: 0 0% 98%;
+    --on-ink-muted: 240 5% 65%;
+
+    --accent: 0 72% 51%;
+    --accent-soft: 0 93% 94%;
+    --accent-ink: 0 70% 30%;
+
+    --line: 240 6% 90%;
+    --line-strong: 240 5% 84%;
+
+    --ok: 142 71% 45%;
+    --warn: 32 95% 44%;
+    --err: 0 72% 51%;
+
+    --radius: 1rem;
+
+    /* shadcn-compat aliases (mantém componentes existentes funcionando) */
+    --background: var(--bg-app);
+    --foreground: var(--ink);
+    --card: var(--bg-card);
+    --card-foreground: var(--ink);
+    --primary: var(--ink);
+    --primary-foreground: var(--on-ink);
+    --secondary: 240 6% 96%;
+    --secondary-foreground: var(--ink);
+    --muted-foreground: var(--muted);
+    --destructive: var(--accent);
+    --destructive-foreground: var(--on-ink);
+    --border: var(--line);
+    --input: var(--line);
+    --ring: var(--ink);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply h-full;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv01', 'cv02', 'cv03', 'cv04';
+  }
+
+  #root {
+    @apply min-h-dvh;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .serif {
+    font-family: 'Instrument Serif', 'Times New Roman', serif;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  }
+  .italic-accent {
+    font-style: italic;
+    color: hsl(var(--accent));
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  }
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 1rem);
+  }
+  .bg-ink {
+    background-color: hsl(var(--bg-ink));
+  }
+  .bg-ink-soft {
+    background-color: hsl(var(--bg-ink-soft));
+  }
+  .text-on-ink {
+    color: hsl(var(--on-ink));
+  }
+  .text-on-ink-muted {
+    color: hsl(var(--on-ink-muted));
+  }
+  .border-on-ink {
+    border-color: hsl(var(--on-ink) / 0.12);
+  }
+  .bg-accent-soft {
+    background-color: hsl(var(--accent-soft));
+  }
+  .text-accent-ink {
+    color: hsl(var(--accent-ink));
+  }
+  .text-accent {
+    color: hsl(var(--accent));
+  }
+  .bg-accent {
+    background-color: hsl(var(--accent));
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s steps(2) infinite;
+}
+.animate-spin-fast {
+  animation: spin 0.8s linear infinite;
+}
+.animate-sheet-up {
+  animation: sheet-up 280ms cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+.animate-fade-in {
+  animation: fade-in 200ms ease-out;
+}

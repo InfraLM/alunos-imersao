@@ -1,0 +1,115 @@
+// =============================================================================
+// Schema Prisma - Banco LOVABLE (liberdade-medica, schema lovable)
+// Compartilhado com o app admin em produção.
+// NUNCA usar `prisma migrate`. Apenas `prisma db pull` para sincronizar
+// alterações de schema feitas via SQL manual no banco antigo.
+// =============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_LOVABLE")
+  schemas  = ["lovable"]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+  output          = "../../node_modules/@prisma-clients/lovable"
+  binaryTargets   = ["native", "rhel-openssl-3.0.x"]
+}
+
+model PfAlunos {
+  matricula              String  @id @db.VarChar
+  nome                   String? @db.VarChar
+  telefone               String? @db.VarChar
+  email                  String? @db.VarChar
+  parcelasPagas          Int?    @map("parcelas_pagas")
+  parcelasAtraso         Int?    @map("parcelas_atraso")
+  parcelasAberto         Int?    @map("parcelas_aberto")
+  aulasTotalPorcentagem  Float?  @map("aulas_total_porcentagem")
+  id                     BigInt?
+  turma                  String? @db.VarChar
+  criadoEm               String? @map("criado_em") @db.VarChar
+  diasDesdePrimeiraAula  Int?    @map("dias_desde_primeira_aula")
+  diasDesdeUltimaAula    Int?    @map("dias_desde_ultima_aula")
+  aulasAssistidas        Int?    @map("aulas_assistidas")
+  statusFinanceiro       String? @map("status_financeiro")
+  cidade                 String? @db.VarChar
+  tag                    String?
+  cep                    String? @db.VarChar
+  cpf                    String? @db.VarChar
+
+  agendamentos PfImersoesAgendamento[]
+  punicoes     PfPunicoes[]
+
+  @@map("pf_alunos")
+  @@schema("lovable")
+}
+
+model PfImersoes1 {
+  idImersao    Int      @id @default(autoincrement()) @map("id_imersao")
+  tipo         Int
+  dataImersao  DateTime @map("data_imersao") @db.Timestamp(6)
+  vagas        Int
+  dataAbertura DateTime @map("data_abertura") @db.Timestamp(6)
+
+  tipoRef      PfImersoesTipo          @relation(fields: [tipo], references: [idTipo])
+  agendamentos PfImersoesAgendamento[]
+
+  @@map("pf_imersoes1")
+  @@schema("lovable")
+}
+
+model PfImersoesTipo {
+  idTipo   Int           @id @default(autoincrement()) @map("id_tipo")
+  tipo     String        @db.VarChar
+  imersoes PfImersoes1[]
+
+  @@map("pf_imersoes_tipo")
+  @@schema("lovable")
+}
+
+model PfImersoesAgendamento {
+  matricula            String    @db.VarChar
+  idImersao            Int       @map("id_imersao")
+  dataSolicitacao      DateTime  @default(now()) @map("data_solicitacao") @db.Timestamptz(6)
+  pagouMulta           Boolean   @default(false) @map("pagou_multa")
+  presencaSabadoManha  Boolean?  @map("presenca_sabado_manha")
+  presencaSabadoTarde  Boolean?  @map("presenca_sabado_tarde")
+  presencaDomingoManha Boolean?  @map("presenca_domingo_manha")
+  presencaDomingoTarde Boolean?  @map("presenca_domingo_tarde")
+  status               Int?
+  statusTimestamp      DateTime? @map("status_timestamp") @db.Timestamptz(6)
+
+  aluno     PfAlunos         @relation(fields: [matricula], references: [matricula], onDelete: Cascade, onUpdate: Cascade)
+  imersao   PfImersoes1      @relation(fields: [idImersao], references: [idImersao], onDelete: Cascade, onUpdate: Cascade)
+  statusRef PfImersaoStatus? @relation(fields: [status], references: [id])
+
+  @@id([matricula, idImersao])
+  @@index([idImersao])
+  @@map("pf_imersoes_agendamento")
+  @@schema("lovable")
+}
+
+model PfImersaoStatus {
+  id   Int     @id
+  tipo String?
+
+  agendamentos PfImersoesAgendamento[]
+
+  @@map("pf_imersao_status")
+  @@schema("lovable")
+}
+
+model PfPunicoes {
+  matricula     String   @db.VarChar
+  punicaoInicio DateTime @map("punicao_inicio") @db.Date
+  punicaoFim    DateTime @map("punicao_fim") @db.Date
+  motivo        String?  @db.VarChar
+
+  aluno PfAlunos @relation(fields: [matricula], references: [matricula])
+
+  @@id([matricula, punicaoInicio])
+  @@map("pf_punicoes")
+  @@schema("lovable")
+}
