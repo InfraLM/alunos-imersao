@@ -395,6 +395,3 @@ function diasAteImersao(dataImersao: Date): number {
   const ms = dataImersao.getTime() - Date.now();
   return Math.floor(ms / 86_400_000);
 }
-
-// Re-export para uso interno (silenciar unused warning de STATUS_REAGENDADO_MULTA)
-void STATUS_REAGENDADO_MULTA;
