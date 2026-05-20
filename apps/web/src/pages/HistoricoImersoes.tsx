@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { api, ApiError, type HistoricoItem } from '@/lib/api';
 import { formatarDataLonga } from '@/lib/datas';
 
-const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562081396751';
+const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562981396751';
 
 export default function HistoricoImersoes() {
   const navigate = useNavigate();

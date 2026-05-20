@@ -9,7 +9,7 @@ interface NavState {
   mensagem: string;
 }
 
-const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562081396751';
+const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562981396751';
 
 export default function Bloqueado() {
   const location = useLocation();

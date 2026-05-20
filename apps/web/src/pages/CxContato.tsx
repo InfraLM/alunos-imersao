@@ -10,7 +10,7 @@ interface NavState {
   diasRestantes?: number;
 }
 
-const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562081396751';
+const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562981396751';
 
 const ACAO_VERBO: Record<NonNullable<NavState['acao']>, string> = {
   inscrever: 'inscrever',

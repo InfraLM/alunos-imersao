@@ -110,7 +110,7 @@ export default function LoginCpf() {
             CPF
           </div>
           <div className="mt-2">
-            <MaskedDigits value={cpf} mask="cpf" />
+            <MaskedDigits value={cpf} mask="cpf" showCursor={false} />
           </div>
           <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5" strokeWidth={1.6} />

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRight, Loader2, MailCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ClipboardPaste, Loader2, MailCheck } from 'lucide-react';
 
 import { PageShell } from '@/components/PageShell';
 import { Keypad } from '@/components/Keypad';
@@ -35,6 +35,24 @@ export default function VerificarOtp() {
   }
   function onBackspace() {
     setCodigo((c) => c.slice(0, -1));
+  }
+
+  async function onPasteCodigo() {
+    if (submitting) return;
+    try {
+      const text = await navigator.clipboard.readText();
+      const digits = text.replace(/\D/g, '').slice(0, 6);
+      if (!digits) {
+        toast.error('Nenhum número encontrado para colar.');
+        return;
+      }
+      setCodigo(digits);
+      if (digits.length < 6) {
+        toast.error('O código copiado não tem 6 dígitos.');
+      }
+    } catch {
+      toast.error('Não foi possível acessar a área de transferência.');
+    }
   }
 
   async function onSubmit() {
@@ -109,9 +127,19 @@ export default function VerificarOtp() {
             Código
           </div>
           <div className="mt-2">
-            <MaskedDigits value={codigo} mask="otp" />
+            <MaskedDigits value={codigo} mask="otp" showCursor={false} />
           </div>
         </div>
+
+        <button
+          type="button"
+          onClick={onPasteCodigo}
+          disabled={submitting}
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-secondary text-sm font-medium text-foreground transition active:scale-[.99] disabled:opacity-40"
+        >
+          <ClipboardPaste className="size-4" strokeWidth={1.8} />
+          Colar código
+        </button>
 
         <button
           type="button"
