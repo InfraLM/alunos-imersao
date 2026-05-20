@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarX2, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { CalendarX2, ChevronLeft, ChevronRight, MapPin, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageShell } from '@/components/PageShell';
@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/hooks/useSession';
 import { api, ApiError, type ImersaoDisponivel } from '@/lib/api';
 import { formatarDataLonga } from '@/lib/datas';
+import { formatarLocal } from '@/lib/imersao';
 
 export default function AgendarLista() {
   const navigate = useNavigate();
@@ -112,6 +113,14 @@ export default function AgendarLista() {
                       <span className="size-0.5 rounded-full bg-muted-foreground/40" />
                       <span>Fim de semana presencial</span>
                     </div>
+                    {formatarLocal(im.local, im.cidade, im.estado) ? (
+                      <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+                        <MapPin className="size-3.5 shrink-0" strokeWidth={1.6} />
+                        <span className="truncate">
+                          {formatarLocal(im.local, im.cidade, im.estado)}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                   <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
                 </button>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowRight, Calendar, ChevronLeft, ClipboardCheck, Loader2, ShieldCheck, Users } from 'lucide-react';
+import { ArrowRight, Calendar, ChevronLeft, ClipboardCheck, Loader2, MapPin, ShieldCheck, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageShell } from '@/components/PageShell';
@@ -12,6 +12,7 @@ import { Wordmark } from '@/components/Wordmark';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api, ApiError, type ImersaoDisponivel } from '@/lib/api';
 import { formatarDataLonga } from '@/lib/datas';
+import { formatarLocal } from '@/lib/imersao';
 
 export default function AgendarConfirmacao() {
   const { id } = useParams<{ id: string }>();
@@ -125,6 +126,14 @@ export default function AgendarConfirmacao() {
               value={`${imersao.vagasRestantes} de ${imersao.vagasTotal} disponíveis`}
               sub={imersao.vagasRestantes <= 3 ? 'Restam poucas vagas — confirme rápido' : 'Há vagas confortavelmente'}
             />
+            {formatarLocal(imersao.local, imersao.cidade, imersao.estado) ? (
+              <InfoRow
+                icon={<MapPin className="size-5" strokeWidth={1.6} />}
+                label="Local"
+                value={formatarLocal(imersao.local, imersao.cidade, imersao.estado) as string}
+                sub="Imersão presencial"
+              />
+            ) : null}
           </div>
 
           <div className="mt-5 flex items-start gap-2.5 rounded-2xl border border-accent/30 bg-accent-soft p-3.5">

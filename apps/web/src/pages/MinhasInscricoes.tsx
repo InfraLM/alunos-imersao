@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CalendarHeart, ChevronLeft, ChevronRight, Loader2, RotateCw, XCircle } from 'lucide-react';
+import { CalendarHeart, ChevronLeft, ChevronRight, Loader2, MapPin, RotateCw, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageShell } from '@/components/PageShell';
@@ -12,6 +12,7 @@ import { BottomSheet } from '@/components/BottomSheet';
 import { useSession } from '@/hooks/useSession';
 import { api, ApiError, type MinhaInscricao } from '@/lib/api';
 import { formatarDataLonga } from '@/lib/datas';
+import { formatarLocal } from '@/lib/imersao';
 
 export default function MinhasInscricoes() {
   const navigate = useNavigate();
@@ -135,6 +136,12 @@ export default function MinhasInscricoes() {
             <div className="mt-3 text-sm text-on-ink-muted">
               {formatarDataLonga(proxima.dataImersao)}
             </div>
+            {formatarLocal(proxima.local, proxima.cidade, proxima.estado) ? (
+              <div className="mt-1.5 flex items-center gap-2 text-sm text-on-ink-muted">
+                <MapPin className="size-4 shrink-0" strokeWidth={1.6} />
+                <span>{formatarLocal(proxima.local, proxima.cidade, proxima.estado)}</span>
+              </div>
+            ) : null}
 
             {proxima.pendenteMulta ? (
               <p className="mt-3 rounded-xl bg-accent/15 p-3 text-[12px] leading-relaxed text-on-ink">
@@ -163,7 +170,7 @@ export default function MinhasInscricoes() {
 
             {!proxima.pendenteMulta && !proxima.podeAlterarSemFinanceiro ? (
               <p className="mt-3 text-[11px] text-on-ink-muted">
-                O prazo para troca de data pelo app expirou (limite de 15 dias antes do evento). Entre em contato com o suporte agora mesmo para que possamos te ajudar.
+                Faltam menos de 15 dias — reagendar ou cancelar gera multa, cobrada depois pela secretaria.
               </p>
             ) : null}
           </div>
@@ -183,13 +190,21 @@ export default function MinhasInscricoes() {
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {formatarDataLonga(i.dataImersao)}
                         </p>
+                        {formatarLocal(i.local, i.cidade, i.estado) ? (
+                          <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <MapPin className="size-3.5 shrink-0" strokeWidth={1.6} />
+                            <span className="truncate">
+                              {formatarLocal(i.local, i.cidade, i.estado)}
+                            </span>
+                          </div>
+                        ) : null}
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                           {i.pendenteMulta ? (
                             <Chip tone="accent">Aguardando pagamento da multa</Chip>
                           ) : i.podeAlterarSemFinanceiro ? (
                             <Chip tone="outline">Em {i.diasRestantes} dias</Chip>
                           ) : (
-                            <Chip tone="accent">Falar com o suporte</Chip>
+                            <Chip tone="accent">Gera multa</Chip>
                           )}
                         </div>
                       </div>
@@ -244,7 +259,7 @@ export default function MinhasInscricoes() {
 
             {!cancelando.podeAlterarSemFinanceiro ? (
               <div className="mt-4 rounded-2xl border border-accent/30 bg-accent-soft p-3.5 text-xs leading-relaxed text-accent-ink">
-                O prazo para cancelamento pelo app expirou (limite de 15 dias antes do evento). Entre em contato com o suporte agora mesmo para que possamos te ajudar.
+                Faltam menos de 15 dias para a imersão. O cancelamento será feito normalmente, mas gera uma multa, cobrada depois pela secretaria.
               </div>
             ) : null}
 

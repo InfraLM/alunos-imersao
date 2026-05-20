@@ -6,7 +6,7 @@ import { ContactCard } from '@/components/ContactCard';
 
 interface NavState {
   acao?: 'cancelar' | 'reagendar' | 'inscrever';
-  motivo?: 'prazo' | 'inadimplente' | 'punicao';
+  motivo?: 'inadimplente' | 'punicao';
   diasRestantes?: number;
 }
 
@@ -40,14 +40,6 @@ function getConteudo(state: NavState): Conteudo {
       titulo: 'Restrição vigente',
       alertTitulo: 'Você possui uma restrição ativa',
       alertCorpo: `Para ${acaoVerbo} uma imersão neste momento, entre em contato com o suporte.`,
-    };
-  }
-  if (state.motivo === 'prazo' || state.diasRestantes !== undefined) {
-    const acao = state.acao === 'reagendar' ? 'reagendamento' : 'cancelamento';
-    return {
-      titulo: 'Prazo limite atingido',
-      alertTitulo: 'Prazo limite atingido',
-      alertCorpo: `O prazo para ${acao} pelo app expirou (limite de 15 dias antes do evento). Entre em contato com o suporte agora mesmo para que possamos te ajudar.`,
     };
   }
   return {

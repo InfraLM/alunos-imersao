@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { CalendarX2, ChevronLeft, ChevronRight, Loader2, Users } from 'lucide-react';
+import { CalendarX2, ChevronLeft, ChevronRight, Loader2, MapPin, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { PageShell } from '@/components/PageShell';
 import { Chip } from '@/components/Chip';
 import { DateTile } from '@/components/DateTile';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BottomSheet } from '@/components/BottomSheet';
 import { api, ApiError, type ImersaoDisponivel, type MinhaInscricao } from '@/lib/api';
 import { formatarDataLonga } from '@/lib/datas';
+import { formatarLocal } from '@/lib/imersao';
 
 export default function ReagendarLista() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +21,7 @@ export default function ReagendarLista() {
   const [submittingId, setSubmittingId] = useState<number | null>(null);
   const [atual, setAtual] = useState<MinhaInscricao | null>(null);
   const [imersoes, setImersoes] = useState<ImersaoDisponivel[]>([]);
+  const [confirmando, setConfirmando] = useState<ImersaoDisponivel | null>(null);
 
   const imersoesMesmoTipo = atual
     ? imersoes.filter((im) => im.tipo.idTipo === atual.tipoId)
@@ -58,7 +61,11 @@ export default function ReagendarLista() {
     setSubmittingId(novaId);
     try {
       await api.post(`/api/me/inscricoes/${idAtual}/reagendar`, { novaImersaoId: novaId });
-      toast.success('Reagendamento confirmado!');
+      toast.success(
+        atual && !atual.podeAlterarSemFinanceiro
+          ? 'Reagendamento registrado. A multa será cobrada pela secretaria.'
+          : 'Reagendamento confirmado!',
+      );
       navigate('/app/minhas', { replace: true });
     } catch (err) {
       if (err instanceof ApiError && (err.data as any)?.direcionarCx) {
@@ -149,7 +156,11 @@ export default function ReagendarLista() {
                 <li key={im.idImersao}>
                   <button
                     type="button"
-                    onClick={() => escolher(im.idImersao)}
+                    onClick={() =>
+                      atual && !atual.podeAlterarSemFinanceiro
+                        ? setConfirmando(im)
+                        : escolher(im.idImersao)
+                    }
                     disabled={submittingId !== null}
                     className="flex w-full items-start gap-3.5 rounded-2xl border bg-card p-4 text-left shadow-sm transition active:scale-[.99] disabled:opacity-50 hover:border-line-strong"
                   >
@@ -172,6 +183,14 @@ export default function ReagendarLista() {
                           {im.vagasRestantes} de {im.vagasTotal} vagas
                         </span>
                       </div>
+                      {formatarLocal(im.local, im.cidade, im.estado) ? (
+                        <div className="mt-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+                          <MapPin className="size-3.5 shrink-0" strokeWidth={1.6} />
+                          <span className="truncate">
+                            {formatarLocal(im.local, im.cidade, im.estado)}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
                     {submitting ? (
                       <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -185,6 +204,57 @@ export default function ReagendarLista() {
           </ul>
         )}
       </div>
+
+      <BottomSheet
+        open={!!confirmando}
+        onOpenChange={(o) => submittingId === null && !o && setConfirmando(null)}
+        title="Reagendar gera multa"
+        description="Sua imersão atual é em menos de 15 dias."
+      >
+        {confirmando ? (
+          <>
+            <div className="rounded-2xl bg-background p-4">
+              <div className="flex items-center gap-3">
+                <DateTile date={confirmando.dataImersao} size="sm" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">Nova data</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {formatarDataLonga(confirmando.dataImersao)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-accent/30 bg-accent-soft p-3.5 text-xs leading-relaxed text-accent-ink">
+              Faltam menos de 15 dias para a sua imersão atual. O reagendamento será feito
+              normalmente, mas gera uma multa, cobrada depois pela secretaria.
+            </div>
+
+            <div className="mt-5 flex gap-2.5">
+              <button
+                type="button"
+                onClick={() => setConfirmando(null)}
+                disabled={submittingId !== null}
+                className="flex h-12 flex-1 items-center justify-center rounded-2xl border border-line bg-card font-medium active:scale-[.99] disabled:opacity-50"
+              >
+                Voltar
+              </button>
+              <button
+                type="button"
+                onClick={() => escolher(confirmando.idImersao)}
+                disabled={submittingId !== null}
+                className="flex h-12 flex-[1.4] items-center justify-center gap-2 rounded-2xl bg-accent font-medium text-on-ink active:scale-[.99] disabled:opacity-50"
+              >
+                {submittingId !== null ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  'Confirmar reagendamento'
+                )}
+              </button>
+            </div>
+          </>
+        ) : null}
+      </BottomSheet>
     </PageShell>
   );
 }

@@ -74,6 +74,9 @@ export interface ImersaoDisponivel {
   vagasTotal: number;
   vagasOcupadas: number;
   vagasRestantes: number;
+  local: string | null;
+  cidade: string | null;
+  estado: string | null;
 }
 
 export interface HistoricoItem {
@@ -95,4 +98,7 @@ export interface MinhaInscricao {
   status: number | null;
   pagouMulta: boolean;
   pendenteMulta: boolean;
+  local: string | null;
+  cidade: string | null;
+  estado: string | null;
 }

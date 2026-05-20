@@ -70,6 +70,9 @@ export class MeService {
         status: a.status,
         pagouMulta: a.pagouMulta,
         pendenteMulta: isPendenteMulta(a.status),
+        local: a.imersao.local,
+        cidade: a.imersao.cidade,
+        estado: a.imersao.estado,
       };
     });
   }

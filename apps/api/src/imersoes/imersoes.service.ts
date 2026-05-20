@@ -9,7 +9,9 @@ import { LovablePrismaService } from '../prisma/lovable-prisma.service';
 import {
   STATUS_AGENDADO,
   STATUS_CANCELADO,
+  STATUS_CANCELADO_MULTA,
   STATUS_REAGENDADO,
+  STATUS_REAGENDADO_MULTA,
   VAGA_WHERE,
   VISIVEL_WHERE,
   isAtivo,
@@ -26,6 +28,9 @@ export interface ImersaoDisponivel {
   vagasTotal: number;
   vagasOcupadas: number;
   vagasRestantes: number;
+  local: string | null;
+  cidade: string | null;
+  estado: string | null;
 }
 
 @Injectable()
@@ -82,6 +87,9 @@ export class ImersoesService {
         vagasTotal: im.vagas,
         vagasOcupadas: ocupadas,
         vagasRestantes: im.vagas - ocupadas,
+        local: im.local,
+        cidade: im.cidade,
+        estado: im.estado,
       });
     }
     return resultado;
@@ -104,6 +112,9 @@ export class ImersoesService {
       vagasTotal: im.vagas,
       vagasOcupadas: im._count.agendamentos,
       vagasRestantes: im.vagas - im._count.agendamentos,
+      local: im.local,
+      cidade: im.cidade,
+      estado: im.estado,
     };
   }
 
@@ -188,19 +199,14 @@ export class ImersoesService {
     }
 
     const dias = diasAteImersao(agendamento.imersao.dataImersao);
-    if (dias < DIAS_LIMITE) {
-      throw new ConflictException({
-        direcionarCx: true,
-        motivo: 'prazo',
-        diasRestantes: dias,
-        mensagem:
-          'O prazo para cancelamento pelo app expirou (limite de 15 dias antes do evento). Entre em contato com o suporte agora mesmo para que possamos te ajudar.',
-      });
-    }
+    const exigeMulta = dias < DIAS_LIMITE;
 
     await this.prisma.pfImersoesAgendamento.update({
       where: { matricula_idImersao: { matricula, idImersao } },
-      data: { status: STATUS_CANCELADO, statusTimestamp: new Date() },
+      data: {
+        status: exigeMulta ? STATUS_CANCELADO_MULTA : STATUS_CANCELADO,
+        statusTimestamp: new Date(),
+      },
     });
     return { status: 'cancelado' };
   }
@@ -228,15 +234,7 @@ export class ImersoesService {
         }
 
         const dias = diasAteImersao(atual.imersao.dataImersao);
-        if (dias < DIAS_LIMITE) {
-          throw new ConflictException({
-            direcionarCx: true,
-            motivo: 'prazo',
-            diasRestantes: dias,
-            mensagem:
-              'O prazo para reagendamento pelo app expirou (limite de 15 dias antes do evento). Entre em contato com o suporte agora mesmo para que possamos te ajudar.',
-          });
-        }
+        const exigeMulta = dias < DIAS_LIMITE;
 
         const nova = await tx.pfImersoes1.findUnique({
           where: { idImersao: idNova },
@@ -284,10 +282,13 @@ export class ImersoesService {
           throw new BadRequestException('Não há mais vagas na imersão escolhida.');
         }
 
-        // Marca a atual como reagendada
+        // Marca a atual como reagendada (com multa pendente se < 15 dias)
         await tx.pfImersoesAgendamento.update({
           where: { matricula_idImersao: { matricula, idImersao: idAtual } },
-          data: { status: STATUS_REAGENDADO, statusTimestamp: new Date() },
+          data: {
+            status: exigeMulta ? STATUS_REAGENDADO_MULTA : STATUS_REAGENDADO,
+            statusTimestamp: new Date(),
+          },
         });
 
         const novoAgendamento = await this.upsertAgendamentoAtivo(tx, matricula, idNova);
