@@ -16,6 +16,7 @@ export interface HorasAluno {
   nome: string | null;
   matricula: string;
   criado_em: string | null;
+  turma: string | null;
 }
 
 export interface HorasPlantao {

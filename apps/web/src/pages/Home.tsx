@@ -37,6 +37,11 @@ export default function Home() {
           <div className="mt-0.5 text-base font-medium tracking-tight">
             {user?.nome ?? '—'}
           </div>
+          {user?.turma ? (
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              Turma {user.turma}
+            </div>
+          ) : null}
         </div>
       </div>
 

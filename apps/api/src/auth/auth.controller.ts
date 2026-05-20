@@ -71,7 +71,7 @@ export class AuthController {
   async me(@CurrentUser() user: AuthenticatedUser) {
     const aluno = await this.lovable.pfAlunos.findUnique({
       where: { matricula: user.matricula },
-      select: { statusFinanceiro: true },
+      select: { statusFinanceiro: true, turma: true },
     });
     const punicao = await this.lovable.pfPunicoes.findFirst({
       where: { matricula: user.matricula, punicaoFim: { gte: new Date() } },
@@ -82,6 +82,7 @@ export class AuthController {
       nome: user.nome,
       email: user.email,
       primeiroNome: firstName(user.nome),
+      turma: aluno?.turma ?? null,
       bloqueios: {
         inadimplente: /inadimplent/i.test(aluno?.statusFinanceiro ?? ''),
         punicao: !!punicao,

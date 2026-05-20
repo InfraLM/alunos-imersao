@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ClipboardCheck,
   Download,
+  Info,
   Stethoscope,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -85,6 +86,15 @@ export default function Academico() {
         Salvar PDF do histórico
       </button>
 
+      <div className="mt-4 flex items-start gap-2.5 rounded-2xl border border-line bg-secondary/60 p-3.5">
+        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" strokeWidth={1.8} />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          Os dados exibidos são referentes a{' '}
+          <strong className="text-foreground">dezembro de 2025</strong> em diante.
+          Para registros anteriores, consulte o suporte acadêmico.
+        </p>
+      </div>
+
       {loading ? (
         <div className="mt-6 space-y-3">
           <Skeleton className="h-24 w-full" />
@@ -101,15 +111,21 @@ export default function Academico() {
           <div className="mt-6 grid grid-cols-2 gap-2.5">
             <div className="rounded-2xl border bg-card p-4">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                Entrada na pós
+                Turma
               </div>
-              <div className="mt-1 text-sm font-medium">{dataEntrada}</div>
+              <div className="mt-1 text-sm font-medium">{data.aluno.turma ?? '—'}</div>
             </div>
             <div className="rounded-2xl border bg-card p-4">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Matrícula
               </div>
               <div className="mono mt-1 text-sm font-medium">{data.aluno.matricula}</div>
+            </div>
+            <div className="col-span-2 rounded-2xl border bg-card p-4">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                Entrada na pós
+              </div>
+              <div className="mt-1 text-sm font-medium">{dataEntrada}</div>
             </div>
           </div>
           <div className="mt-2.5 rounded-2xl bg-ink p-5 text-on-ink">

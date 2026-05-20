@@ -37,22 +37,29 @@ export default function VerificarOtp() {
     setCodigo((c) => c.slice(0, -1));
   }
 
-  async function onPasteCodigo() {
-    if (submitting) return;
+  // Ao tocar no campo "Colar código": tenta colar via API de clipboard — um
+  // atalho que funciona em parte dos navegadores. Se não der, o campo nativo
+  // continua focado e o aluno cola pelo gesto do próprio celular (segurar →
+  // Colar), o que funciona em qualquer navegador mobile.
+  async function onFocusColar(e: React.FocusEvent<HTMLInputElement>) {
+    const input = e.currentTarget;
     try {
       const text = await navigator.clipboard.readText();
       const digits = text.replace(/\D/g, '').slice(0, 6);
-      if (!digits) {
-        toast.error('Nenhum número encontrado para colar.');
-        return;
-      }
-      setCodigo(digits);
-      if (digits.length < 6) {
-        toast.error('O código copiado não tem 6 dígitos.');
+      if (digits) {
+        setCodigo(digits);
+        input.blur();
       }
     } catch {
-      toast.error('Não foi possível acessar a área de transferência.');
+      // Sem acesso programático ao clipboard — segue pela colagem nativa.
     }
+  }
+
+  function onColar(e: React.ChangeEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 6);
+    if (!digits) return;
+    setCodigo(digits);
+    if (digits.length >= 6) e.target.blur();
   }
 
   async function onSubmit() {
@@ -131,15 +138,21 @@ export default function VerificarOtp() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onPasteCodigo}
-          disabled={submitting}
-          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-secondary text-sm font-medium text-foreground transition active:scale-[.99] disabled:opacity-40"
-        >
+        <label className="relative mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-secondary text-sm font-medium text-foreground transition active:scale-[.99]">
           <ClipboardPaste className="size-4" strokeWidth={1.8} />
           Colar código
-        </button>
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            aria-label="Colar o código copiado"
+            value=""
+            disabled={submitting}
+            onFocus={onFocusColar}
+            onChange={onColar}
+            className="absolute inset-0 cursor-pointer rounded-2xl opacity-0 disabled:cursor-not-allowed"
+          />
+        </label>
 
         <button
           type="button"

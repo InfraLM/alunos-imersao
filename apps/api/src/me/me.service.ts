@@ -125,7 +125,7 @@ export class MeService {
   async getHoras(matricula: string) {
     const aluno = await this.prisma.pfAlunos.findUnique({
       where: { matricula },
-      select: { nome: true, matricula: true, criadoEm: true },
+      select: { nome: true, matricula: true, criadoEm: true, turma: true },
     });
 
     const plantoes = await this.prisma.$queryRawUnsafe<
@@ -182,6 +182,7 @@ export class MeService {
         nome: aluno?.nome ?? null,
         matricula: aluno?.matricula ?? matricula,
         criado_em: aluno?.criadoEm ?? null,
+        turma: aluno?.turma ?? null,
       },
       plantoes,
       agendamentos,

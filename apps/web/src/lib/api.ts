@@ -53,6 +53,7 @@ export interface MeResponse {
   nome: string | null;
   email: string | null;
   primeiroNome: string;
+  turma: string | null;
   bloqueios: {
     inadimplente: boolean;
     punicao: boolean;
