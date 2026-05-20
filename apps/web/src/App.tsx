@@ -12,6 +12,7 @@ import MinhasInscricoes from './pages/MinhasInscricoes';
 import HistoricoImersoes from './pages/HistoricoImersoes';
 import ReagendarLista from './pages/ReagendarLista';
 import CxContato from './pages/CxContato';
+import Academico from './pages/Academico';
 import { RequireAuth } from './components/RequireAuth';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/app/sucesso/:id" element={<SucessoInscricao />} />
         <Route path="/app/minhas" element={<MinhasInscricoes />} />
         <Route path="/app/historico" element={<HistoricoImersoes />} />
+        <Route path="/app/academico" element={<Academico />} />
         <Route path="/app/minhas/:id/reagendar" element={<ReagendarLista />} />
         <Route path="/app/cx" element={<CxContato />} />
       </Route>

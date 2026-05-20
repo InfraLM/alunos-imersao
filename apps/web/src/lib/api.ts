@@ -77,6 +77,7 @@ export interface ImersaoDisponivel {
   local: string | null;
   cidade: string | null;
   estado: string | null;
+  linkGrupoWhatsapp: string | null;
 }
 
 export interface HistoricoItem {
@@ -101,4 +102,5 @@ export interface MinhaInscricao {
   local: string | null;
   cidade: string | null;
   estado: string | null;
+  linkGrupoWhatsapp: string | null;
 }

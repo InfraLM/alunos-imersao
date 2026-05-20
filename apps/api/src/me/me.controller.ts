@@ -33,6 +33,11 @@ export class MeController {
     return { historico: await this.me.listarHistorico(user.matricula) };
   }
 
+  @Get('horas')
+  async horas(@CurrentUser() user: AuthenticatedUser) {
+    return this.me.getHoras(user.matricula);
+  }
+
   @Delete('inscricoes/:id')
   async cancelar(
     @CurrentUser() user: AuthenticatedUser,

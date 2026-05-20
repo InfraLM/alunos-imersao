@@ -11,7 +11,7 @@ import { DateTile } from '@/components/DateTile';
 import { Wordmark } from '@/components/Wordmark';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api, ApiError, type ImersaoDisponivel } from '@/lib/api';
-import { formatarDataLonga } from '@/lib/datas';
+import { formatarFimDeSemana } from '@/lib/datas';
 import { formatarLocal } from '@/lib/imersao';
 
 export default function AgendarConfirmacao() {
@@ -102,7 +102,7 @@ export default function AgendarConfirmacao() {
             <span className="italic-accent">{imersao.tipo.nome.split(' ').slice(1).join(' ') || 'completa'}</span>
           </h1>
           <p className="mt-3 text-sm text-on-ink-muted">
-            {formatarDataLonga(imersao.dataImersao)} · Fim de semana presencial
+            {formatarFimDeSemana(imersao.dataImersao)}
           </p>
         </div>
 
@@ -111,8 +111,8 @@ export default function AgendarConfirmacao() {
             <InfoRow
               icon={<Calendar className="size-5" strokeWidth={1.6} />}
               label="Quando"
-              value={formatarDataLonga(imersao.dataImersao)}
-              sub="Sábado e domingo · 4 períodos"
+              value={formatarFimDeSemana(imersao.dataImersao)}
+              sub="4 períodos · presencial"
             />
             <InfoRow
               icon={<ClipboardCheck className="size-5" strokeWidth={1.6} />}
@@ -180,7 +180,7 @@ export default function AgendarConfirmacao() {
             <div className="min-w-0">
               <p className="text-sm font-medium">{imersao.tipo.nome}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {formatarDataLonga(imersao.dataImersao)}
+                {formatarFimDeSemana(imersao.dataImersao)}
               </p>
             </div>
           </div>

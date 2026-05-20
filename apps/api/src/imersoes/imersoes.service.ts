@@ -2,10 +2,12 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma-clients/lovable';
 import { LovablePrismaService } from '../prisma/lovable-prisma.service';
+import { MailService } from '../mail/mail.service';
 import {
   STATUS_AGENDADO,
   STATUS_CANCELADO,
@@ -31,11 +33,17 @@ export interface ImersaoDisponivel {
   local: string | null;
   cidade: string | null;
   estado: string | null;
+  linkGrupoWhatsapp: string | null;
 }
 
 @Injectable()
 export class ImersoesService {
-  constructor(private readonly prisma: LovablePrismaService) {}
+  private readonly logger = new Logger(ImersoesService.name);
+
+  constructor(
+    private readonly prisma: LovablePrismaService,
+    private readonly mail: MailService,
+  ) {}
 
   async listarDisponiveis(matricula: string): Promise<ImersaoDisponivel[]> {
     const agora = new Date();
@@ -56,9 +64,11 @@ export class ImersoesService {
 
     const inscritasRaw = await this.prisma.pfImersoesAgendamento.findMany({
       where: { matricula, ...VISIVEL_WHERE },
-      select: { idImersao: true },
+      select: { idImersao: true, imersao: { select: { tipo: true } } },
     });
     const idsInscritos = new Set(inscritasRaw.map((a) => a.idImersao));
+    // Bloqueia também os tipos que o aluno já tem agendados — não só os cursados.
+    for (const a of inscritasRaw) tiposBloqueados.add(a.imersao.tipo);
 
     const imersoes = await this.prisma.pfImersoes1.findMany({
       where: {
@@ -90,6 +100,7 @@ export class ImersoesService {
         local: im.local,
         cidade: im.cidade,
         estado: im.estado,
+        linkGrupoWhatsapp: im.linkGrupoWhatsapp,
       });
     }
     return resultado;
@@ -115,12 +126,13 @@ export class ImersoesService {
       local: im.local,
       cidade: im.cidade,
       estado: im.estado,
+      linkGrupoWhatsapp: im.linkGrupoWhatsapp,
     };
   }
 
   async inscrever(matricula: string, idImersao: number) {
     await this.checarBloqueiosOuLancar(matricula);
-    return this.prisma.$transaction(
+    const resultado = await this.prisma.$transaction(
       async (tx) => {
         const im = await tx.pfImersoes1.findUnique({
           where: { idImersao },
@@ -136,7 +148,7 @@ export class ImersoesService {
           throw new BadRequestException('Esta imersão já ocorreu');
         }
 
-        const jaFezTipo = await tx.pfImersoesAgendamento.findFirst({
+        const jaTemTipo = await tx.pfImersoesAgendamento.findFirst({
           where: {
             matricula,
             imersao: { tipo: im.tipo },
@@ -145,12 +157,18 @@ export class ImersoesService {
               { presencaSabadoTarde: true },
               { presencaDomingoManha: true },
               { presencaDomingoTarde: true },
+              {
+                status: {
+                  in: [STATUS_AGENDADO, STATUS_REAGENDADO_MULTA, STATUS_CANCELADO_MULTA],
+                },
+              },
+              { status: null },
             ],
           },
         });
-        if (jaFezTipo) {
+        if (jaTemTipo) {
           throw new ConflictException(
-            `Você já participou de uma imersão de "${im.tipoRef.tipo}". Não é possível repetir o mesmo tipo.`,
+            `Você já tem uma imersão de "${im.tipoRef.tipo}" agendada ou concluída — não é possível ter duas imersões do mesmo tipo.`,
           );
         }
 
@@ -179,6 +197,9 @@ export class ImersoesService {
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
+
+    void this.enviarConfirmacaoImersao(matricula, idImersao, 'agendamento');
+    return resultado;
   }
 
   async cancelar(matricula: string, idImersao: number) {
@@ -217,7 +238,7 @@ export class ImersoesService {
     }
     await this.checarBloqueiosOuLancar(matricula);
 
-    return this.prisma.$transaction(
+    const resultado = await this.prisma.$transaction(
       async (tx) => {
         const atual = await tx.pfImersoesAgendamento.findUnique({
           where: { matricula_idImersao: { matricula, idImersao: idAtual } },
@@ -310,6 +331,9 @@ export class ImersoesService {
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     );
+
+    void this.enviarConfirmacaoImersao(matricula, idNova, 'reagendamento');
+    return resultado;
   }
 
   /**
@@ -365,6 +389,51 @@ export class ImersoesService {
     });
   }
 
+  /**
+   * Envia (best-effort) o e-mail de confirmação de agendamento/reagendamento.
+   * Nunca lança — uma falha de e-mail não pode derrubar a inscrição.
+   */
+  private async enviarConfirmacaoImersao(
+    matricula: string,
+    idImersao: number,
+    modo: 'agendamento' | 'reagendamento',
+  ): Promise<void> {
+    try {
+      const [aluno, im] = await Promise.all([
+        this.prisma.pfAlunos.findUnique({
+          where: { matricula },
+          select: { nome: true, email: true },
+        }),
+        this.prisma.pfImersoes1.findUnique({
+          where: { idImersao },
+          include: { tipoRef: true },
+        }),
+      ]);
+      if (!aluno?.email || !im) {
+        this.logger.warn(
+          `Confirmação de imersão não enviada (sem e-mail ou imersão) — matrícula ${matricula}`,
+        );
+        return;
+      }
+      await this.mail.sendConfirmacaoImersao({
+        matricula,
+        to: aluno.email,
+        primeiroNome: primeiroNome(aluno.nome),
+        modo,
+        tipoImersao: im.tipoRef.tipo,
+        dataImersao: im.dataImersao,
+        local: im.local,
+        cidade: im.cidade,
+        estado: im.estado,
+        linkGrupoWhatsapp: im.linkGrupoWhatsapp,
+      });
+    } catch (err) {
+      this.logger.error(
+        `Falha ao enviar confirmação de imersão: ${(err as Error).message}`,
+      );
+    }
+  }
+
   private async checarBloqueiosOuLancar(matricula: string): Promise<void> {
     const aluno = await this.prisma.pfAlunos.findUnique({
       where: { matricula },
@@ -395,4 +464,10 @@ export class ImersoesService {
 function diasAteImersao(dataImersao: Date): number {
   const ms = dataImersao.getTime() - Date.now();
   return Math.floor(ms / 86_400_000);
+}
+
+function primeiroNome(nome: string | null): string {
+  const limpo = (nome ?? '').trim();
+  if (!limpo) return 'aluno(a)';
+  return limpo.split(/\s+/)[0];
 }

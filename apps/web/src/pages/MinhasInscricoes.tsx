@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { BottomSheet } from '@/components/BottomSheet';
 import { useSession } from '@/hooks/useSession';
 import { api, ApiError, type MinhaInscricao } from '@/lib/api';
-import { formatarDataLonga } from '@/lib/datas';
+import { formatarFimDeSemana } from '@/lib/datas';
 import { formatarLocal } from '@/lib/imersao';
 
 export default function MinhasInscricoes() {
@@ -134,7 +134,7 @@ export default function MinhasInscricoes() {
             </div>
             <div className="serif mt-4 text-[24px] leading-tight">{proxima.tipo}</div>
             <div className="mt-3 text-sm text-on-ink-muted">
-              {formatarDataLonga(proxima.dataImersao)}
+              {formatarFimDeSemana(proxima.dataImersao)}
             </div>
             {formatarLocal(proxima.local, proxima.cidade, proxima.estado) ? (
               <div className="mt-1.5 flex items-center gap-2 text-sm text-on-ink-muted">
@@ -188,7 +188,7 @@ export default function MinhasInscricoes() {
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{i.tipo}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
-                          {formatarDataLonga(i.dataImersao)}
+                          {formatarFimDeSemana(i.dataImersao)}
                         </p>
                         {formatarLocal(i.local, i.cidade, i.estado) ? (
                           <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -251,7 +251,7 @@ export default function MinhasInscricoes() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">{cancelando.tipo}</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {formatarDataLonga(cancelando.dataImersao)}
+                    {formatarFimDeSemana(cancelando.dataImersao)}
                   </p>
                 </div>
               </div>

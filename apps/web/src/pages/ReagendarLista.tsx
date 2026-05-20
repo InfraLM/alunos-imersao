@@ -9,7 +9,7 @@ import { DateTile } from '@/components/DateTile';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BottomSheet } from '@/components/BottomSheet';
 import { api, ApiError, type ImersaoDisponivel, type MinhaInscricao } from '@/lib/api';
-import { formatarDataLonga } from '@/lib/datas';
+import { formatarFimDeSemana } from '@/lib/datas';
 import { formatarLocal } from '@/lib/imersao';
 
 export default function ReagendarLista() {
@@ -122,7 +122,7 @@ export default function ReagendarLista() {
             <div className="min-w-0">
               <p className="text-sm font-medium">{atual.tipo}</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {formatarDataLonga(atual.dataImersao)}
+                {formatarFimDeSemana(atual.dataImersao)}
               </p>
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function ReagendarLista() {
                         ) : null}
                       </div>
                       <p className="mt-2 text-[15px] font-medium leading-tight">
-                        {formatarDataLonga(im.dataImersao)}
+                        {formatarFimDeSemana(im.dataImersao)}
                       </p>
                       <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                         <Users className="size-3.5" strokeWidth={1.6} />
@@ -219,7 +219,7 @@ export default function ReagendarLista() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">Nova data</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {formatarDataLonga(confirmando.dataImersao)}
+                    {formatarFimDeSemana(confirmando.dataImersao)}
                   </p>
                 </div>
               </div>

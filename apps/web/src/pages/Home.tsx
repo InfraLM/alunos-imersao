@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CalendarPlus, ChevronRight, History, ListChecks, LogOut } from 'lucide-react';
+import { CalendarPlus, ChevronRight, GraduationCap, History, ListChecks, LogOut } from 'lucide-react';
 
 import { PageShell } from '@/components/PageShell';
 import { Avatar } from '@/components/Avatar';
@@ -69,6 +69,12 @@ export default function Home() {
           title="Histórico"
           subtitle="Imersões em que você participou"
           icon={<History className="size-5" strokeWidth={1.6} />}
+        />
+        <ActionCard
+          onClick={() => navigate('/app/academico')}
+          title="Acadêmico"
+          subtitle="Seu histórico, horas e PDF"
+          icon={<GraduationCap className="size-5" strokeWidth={1.6} />}
         />
       </div>
     </PageShell>

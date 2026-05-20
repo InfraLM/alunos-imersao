@@ -8,7 +8,7 @@ import { DateTile } from '@/components/DateTile';
 import { Chip } from '@/components/Chip';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api, ApiError, type HistoricoItem } from '@/lib/api';
-import { formatarDataLonga } from '@/lib/datas';
+import { formatarFimDeSemana } from '@/lib/datas';
 
 const WHATSAPP = import.meta.env.VITE_CX_WHATSAPP ?? '5562981396751';
 
@@ -117,7 +117,7 @@ export default function HistoricoImersoes() {
                       )}
                     </div>
                     <p className="mt-2 text-sm font-medium leading-tight">
-                      {formatarDataLonga(h.dataImersao)}
+                      {formatarFimDeSemana(h.dataImersao)}
                     </p>
                     {h.statusPresenca === 'faltou' ? (
                       <p className="mt-1.5 text-xs leading-relaxed text-accent-ink">

@@ -10,7 +10,7 @@ import { StatusBanner } from '@/components/StatusBanner';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSession } from '@/hooks/useSession';
 import { api, ApiError, type ImersaoDisponivel } from '@/lib/api';
-import { formatarDataLonga } from '@/lib/datas';
+import { formatarFimDeSemana } from '@/lib/datas';
 import { formatarLocal } from '@/lib/imersao';
 
 export default function AgendarLista() {
@@ -103,7 +103,7 @@ export default function AgendarLista() {
                       ) : null}
                     </div>
                     <p className="mt-2 text-[15px] font-medium leading-tight tracking-tight">
-                      {formatarDataLonga(im.dataImersao)}
+                      {formatarFimDeSemana(im.dataImersao)}
                     </p>
                     <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                       <Users className="size-3.5" strokeWidth={1.6} />

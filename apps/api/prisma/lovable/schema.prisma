@@ -52,9 +52,10 @@ model PfImersoes1 {
   dataImersao  DateTime @map("data_imersao") @db.Timestamp(6)
   vagas        Int
   dataAbertura DateTime @map("data_abertura") @db.Timestamp(6)
-  local        String?  @db.VarChar
-  cidade       String?  @db.Text
-  estado       String?  @db.VarChar
+  local             String? @db.VarChar
+  cidade            String? @db.Text
+  estado            String? @db.Text
+  linkGrupoWhatsapp String? @map("link_grupo_whatsapp") @db.VarChar
 
   tipoRef      PfImersoesTipo          @relation(fields: [tipo], references: [idTipo])
   agendamentos PfImersoesAgendamento[]

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Check } from 'lucide-react';
+import { Check, MessageCircle } from 'lucide-react';
 
 import { PageShell } from '@/components/PageShell';
 import { Wordmark } from '@/components/Wordmark';
@@ -8,7 +8,7 @@ import { Ticket } from '@/components/Ticket';
 import { Chip } from '@/components/Chip';
 import { useSession } from '@/hooks/useSession';
 import { api, type ImersaoDisponivel } from '@/lib/api';
-import { formatarDataLonga } from '@/lib/datas';
+import { formatarFimDeSemana } from '@/lib/datas';
 
 export default function SucessoInscricao() {
   const { id } = useParams<{ id: string }>();
@@ -50,10 +50,10 @@ export default function SucessoInscricao() {
             <br />
             <span className="italic-accent">confirmada</span>.
           </h1>
-          <p className="mt-4 max-w-[300px] text-[15px] leading-relaxed text-on-ink-muted">
-            Te esperamos no dia{' '}
+          <p className="mt-4 max-w-[320px] text-[15px] leading-relaxed text-on-ink-muted">
+            Anote:{' '}
             <strong className="text-on-ink">
-              {imersao ? formatarDataLonga(imersao.dataImersao).split(',')[1]?.trim() : '—'}
+              {imersao ? formatarFimDeSemana(imersao.dataImersao) : '—'}
             </strong>
             . Os detalhes foram enviados para o seu email.
           </p>
@@ -69,21 +69,12 @@ export default function SucessoInscricao() {
                     <span className="mono text-[11px] text-muted-foreground">{codigo}</span>
                   </div>
                   <div className="serif mt-3 text-[22px] leading-tight">{imersao.tipo.nome}</div>
-                  <div className="mt-3 flex items-center gap-4">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                        Início
-                      </div>
-                      <div className="serif mt-1 text-xl">
-                        {formatarDataLonga(imersao.dataImersao).split(',')[1]?.trim() ?? '—'}
-                      </div>
+                  <div className="mt-3">
+                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                      Quando
                     </div>
-                    <div className="h-8 w-px bg-line" />
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                        Tipo
-                      </div>
-                      <div className="mt-1 text-sm">Presencial</div>
+                    <div className="mt-1 text-sm font-medium leading-snug">
+                      {formatarFimDeSemana(imersao.dataImersao)}
                     </div>
                   </div>
                 </>
@@ -99,6 +90,17 @@ export default function SucessoInscricao() {
         ) : null}
 
         <div className="mt-auto flex flex-col gap-2 pt-8">
+          {imersao?.linkGrupoWhatsapp ? (
+            <a
+              href={imersao.linkGrupoWhatsapp}
+              target="_blank"
+              rel="noreferrer"
+              className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-[#25D366] text-base font-medium text-white active:scale-[.99]"
+            >
+              <MessageCircle className="size-5" strokeWidth={1.8} />
+              Entrar no grupo do WhatsApp
+            </a>
+          ) : null}
           <button
             type="button"
             onClick={() => navigate('/app/minhas', { replace: true })}
