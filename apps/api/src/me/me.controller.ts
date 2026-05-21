@@ -46,6 +46,16 @@ export class MeController {
     return this.imersoes.cancelar(user.matricula, id);
   }
 
+  @Get('inscricoes/:id/opcoes-reagendamento')
+  async opcoesReagendamento(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return {
+      imersoes: await this.imersoes.listarOpcoesReagendamento(user.matricula, id),
+    };
+  }
+
   @Post('inscricoes/:id/reagendar')
   async reagendar(
     @CurrentUser() user: AuthenticatedUser,

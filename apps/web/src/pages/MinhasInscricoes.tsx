@@ -17,6 +17,7 @@ import { formatarLocal } from '@/lib/imersao';
 export default function MinhasInscricoes() {
   const navigate = useNavigate();
   const { user } = useSession();
+  const pendenciaGlobal = !!user?.bloqueios?.pendenciaMulta;
   const [loading, setLoading] = useState(true);
   const [inscricoes, setInscricoes] = useState<MinhaInscricao[]>([]);
   const [cancelando, setCancelando] = useState<MinhaInscricao | null>(null);
@@ -104,6 +105,7 @@ export default function MinhasInscricoes() {
         <StatusBanner
           inadimplente={user?.bloqueios?.inadimplente}
           punicao={user?.bloqueios?.punicao}
+          pendenciaMulta={user?.bloqueios?.pendenciaMulta}
         />
       </div>
 
@@ -154,14 +156,16 @@ export default function MinhasInscricoes() {
                 <button
                   type="button"
                   onClick={() => navigate(`/app/minhas/${proxima.idImersao}/reagendar`)}
-                  className="flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] text-sm font-medium text-on-ink active:scale-[.99]"
+                  disabled={pendenciaGlobal}
+                  className="flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] text-sm font-medium text-on-ink active:scale-[.99] disabled:opacity-40 disabled:active:scale-100"
                 >
                   <RotateCw className="size-4" strokeWidth={1.6} /> Reagendar
                 </button>
                 <button
                   type="button"
                   onClick={() => setCancelando(proxima)}
-                  className="flex h-11 items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/15 text-sm font-medium text-on-ink active:scale-[.99]"
+                  disabled={pendenciaGlobal}
+                  className="flex h-11 items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/15 text-sm font-medium text-on-ink active:scale-[.99] disabled:opacity-40 disabled:active:scale-100"
                 >
                   <XCircle className="size-4" strokeWidth={1.6} /> Cancelar
                 </button>
@@ -212,7 +216,7 @@ export default function MinhasInscricoes() {
                         <button
                           type="button"
                           onClick={() => navigate(`/app/minhas/${i.idImersao}/reagendar`)}
-                          disabled={i.pendenteMulta}
+                          disabled={i.pendenteMulta || pendenciaGlobal}
                           className="flex size-9 items-center justify-center rounded-lg border bg-card text-foreground active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                           aria-label="Reagendar"
                         >
@@ -221,7 +225,7 @@ export default function MinhasInscricoes() {
                         <button
                           type="button"
                           onClick={() => setCancelando(i)}
-                          disabled={i.pendenteMulta}
+                          disabled={i.pendenteMulta || pendenciaGlobal}
                           className="flex size-9 items-center justify-center rounded-lg border border-accent/30 bg-accent-soft text-accent-ink active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
                           aria-label="Cancelar"
                         >

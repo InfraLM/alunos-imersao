@@ -4,17 +4,44 @@ import { AlertCircle, ChevronRight } from 'lucide-react';
 interface StatusBannerProps {
   inadimplente?: boolean;
   punicao?: boolean;
+  pendenciaMulta?: boolean;
 }
 
-export function StatusBanner({ inadimplente, punicao }: StatusBannerProps) {
-  const navigate = useNavigate();
-  if (!inadimplente && !punicao) return null;
+type Motivo = 'inadimplente' | 'punicao' | 'pendencia_multa';
 
-  const motivo: 'inadimplente' | 'punicao' = inadimplente ? 'inadimplente' : 'punicao';
-  const titulo = inadimplente ? 'Pendência financeira' : 'Restrição vigente';
-  const mensagem = inadimplente
-    ? 'Sua situação financeira pode estar pendente. Para verificar sua situação ou regularizar, entre em contato com o suporte.'
-    : 'Você possui uma restrição vigente. Para agendar, cancelar ou reagendar, entre em contato com o suporte.';
+const CONTEUDO: Record<Motivo, { titulo: string; mensagem: string }> = {
+  inadimplente: {
+    titulo: 'Pendência financeira',
+    mensagem:
+      'Sua situação financeira pode estar pendente. Para verificar sua situação ou regularizar, entre em contato com o suporte.',
+  },
+  punicao: {
+    titulo: 'Restrição vigente',
+    mensagem:
+      'Você possui uma restrição vigente. Para agendar, cancelar ou reagendar, entre em contato com o suporte.',
+  },
+  pendencia_multa: {
+    titulo: 'Multa pendente',
+    mensagem:
+      'Você tem uma multa pendente de pagamento. Para voltar a agendar, reagendar ou cancelar imersões, entre em contato com o suporte.',
+  },
+};
+
+export function StatusBanner({ inadimplente, punicao, pendenciaMulta }: StatusBannerProps) {
+  const navigate = useNavigate();
+
+  // Prioridade: inadimplência → punição → pendência de multa (mesma ordem do
+  // gate de checarBloqueiosOuLancar no backend).
+  const motivo: Motivo | null = inadimplente
+    ? 'inadimplente'
+    : punicao
+      ? 'punicao'
+      : pendenciaMulta
+        ? 'pendencia_multa'
+        : null;
+  if (!motivo) return null;
+
+  const { titulo, mensagem } = CONTEUDO[motivo];
 
   return (
     <button

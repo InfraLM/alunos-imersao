@@ -57,6 +57,7 @@ export interface MeResponse {
   bloqueios: {
     inadimplente: boolean;
     punicao: boolean;
+    pendenciaMulta: boolean;
   };
 }
 

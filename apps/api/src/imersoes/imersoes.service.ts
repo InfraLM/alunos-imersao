@@ -14,6 +14,7 @@ import {
   STATUS_CANCELADO_MULTA,
   STATUS_REAGENDADO,
   STATUS_REAGENDADO_MULTA,
+  STATUS_PENDENTES_MULTA,
   VAGA_WHERE,
   VISIVEL_WHERE,
   isAtivo,
@@ -35,6 +36,10 @@ export interface ImersaoDisponivel {
   estado: string | null;
   linkGrupoWhatsapp: string | null;
 }
+
+type ImersaoComContagem = Prisma.PfImersoes1GetPayload<{
+  include: { tipoRef: true; _count: { select: { agendamentos: true } } };
+}>;
 
 @Injectable()
 export class ImersoesService {
@@ -89,24 +94,12 @@ export class ImersoesService {
       if (tiposBloqueados.has(im.tipo)) continue;
       if (idsInscritos.has(im.idImersao)) continue;
 
-      resultado.push({
-        idImersao: im.idImersao,
-        tipo: { idTipo: im.tipoRef.idTipo, nome: im.tipoRef.tipo },
-        dataImersao: im.dataImersao,
-        dataAbertura: im.dataAbertura,
-        vagasTotal: im.vagas,
-        vagasOcupadas: ocupadas,
-        vagasRestantes: im.vagas - ocupadas,
-        local: im.local,
-        cidade: im.cidade,
-        estado: im.estado,
-        linkGrupoWhatsapp: im.linkGrupoWhatsapp,
-      });
+      resultado.push(this.toImersaoDisponivel(im));
     }
     return resultado;
   }
 
-  async detalhar(idImersao: number) {
+  async detalhar(idImersao: number): Promise<ImersaoDisponivel> {
     const im = await this.prisma.pfImersoes1.findUnique({
       where: { idImersao },
       include: {
@@ -115,19 +108,43 @@ export class ImersoesService {
       },
     });
     if (!im) throw new NotFoundException('Imersão não encontrada');
-    return {
-      idImersao: im.idImersao,
-      tipo: { idTipo: im.tipoRef.idTipo, nome: im.tipoRef.tipo },
-      dataImersao: im.dataImersao,
-      dataAbertura: im.dataAbertura,
-      vagasTotal: im.vagas,
-      vagasOcupadas: im._count.agendamentos,
-      vagasRestantes: im.vagas - im._count.agendamentos,
-      local: im.local,
-      cidade: im.cidade,
-      estado: im.estado,
-      linkGrupoWhatsapp: im.linkGrupoWhatsapp,
-    };
+    return this.toImersaoDisponivel(im);
+  }
+
+  /**
+   * Lista as outras turmas do MESMO tipo da inscrição atual, para reagendamento.
+   * Diferente de `listarDisponiveis`, NÃO exclui o tipo que o aluno já cursa —
+   * é justamente esse tipo que ele quer reagendar. Só exibição: `reagendar`
+   * revalida tudo na transação serializable.
+   */
+  async listarOpcoesReagendamento(
+    matricula: string,
+    idAtual: number,
+  ): Promise<ImersaoDisponivel[]> {
+    const atual = await this.prisma.pfImersoesAgendamento.findUnique({
+      where: { matricula_idImersao: { matricula, idImersao: idAtual } },
+      include: { imersao: true },
+    });
+    if (!atual) throw new NotFoundException('Inscrição atual não encontrada');
+
+    const agora = new Date();
+    const imersoes = await this.prisma.pfImersoes1.findMany({
+      where: {
+        tipo: atual.imersao.tipo,
+        idImersao: { not: idAtual },
+        dataImersao: { gt: agora },
+        dataAbertura: { lte: agora },
+      },
+      include: {
+        tipoRef: true,
+        _count: { select: { agendamentos: { where: VAGA_WHERE } } },
+      },
+      orderBy: { dataImersao: 'asc' },
+    });
+
+    return imersoes
+      .filter((im) => im._count.agendamentos < im.vagas)
+      .map((im) => this.toImersaoDisponivel(im));
   }
 
   async inscrever(matricula: string, idImersao: number) {
@@ -434,6 +451,24 @@ export class ImersoesService {
     }
   }
 
+  /** Projeta uma imersão (com tipoRef e _count) no formato ImersaoDisponivel. */
+  private toImersaoDisponivel(im: ImersaoComContagem): ImersaoDisponivel {
+    const ocupadas = im._count.agendamentos;
+    return {
+      idImersao: im.idImersao,
+      tipo: { idTipo: im.tipoRef.idTipo, nome: im.tipoRef.tipo },
+      dataImersao: im.dataImersao,
+      dataAbertura: im.dataAbertura,
+      vagasTotal: im.vagas,
+      vagasOcupadas: ocupadas,
+      vagasRestantes: im.vagas - ocupadas,
+      local: im.local,
+      cidade: im.cidade,
+      estado: im.estado,
+      linkGrupoWhatsapp: im.linkGrupoWhatsapp,
+    };
+  }
+
   private async checarBloqueiosOuLancar(matricula: string): Promise<void> {
     const aluno = await this.prisma.pfAlunos.findUnique({
       where: { matricula },
@@ -456,6 +491,23 @@ export class ImersoesService {
         motivo: 'punicao',
         mensagem:
           'Você possui uma restrição vigente. Para essa ação, entre em contato com o suporte.',
+      });
+    }
+
+    // Pendência de multa: qualquer linha em status 4/5 ainda não paga bloqueia
+    // TODAS as ações (agendar/reagendar/cancelar) até a secretaria confirmar o
+    // pagamento no admin-plantao-flexivel. Sem filtro de data — a multa é uma
+    // dívida e continua valendo mesmo depois da imersão passar.
+    const pendencia = await this.prisma.pfImersoesAgendamento.findFirst({
+      where: { matricula, status: { in: STATUS_PENDENTES_MULTA }, pagouMulta: false },
+      select: { idImersao: true },
+    });
+    if (pendencia) {
+      throw new ConflictException({
+        direcionarCx: true,
+        motivo: 'pendencia_multa',
+        mensagem:
+          'Você tem uma multa pendente de pagamento. Resolva com o suporte antes de agendar, reagendar ou cancelar imersões.',
       });
     }
   }

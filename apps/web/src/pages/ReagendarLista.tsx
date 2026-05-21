@@ -23,17 +23,15 @@ export default function ReagendarLista() {
   const [imersoes, setImersoes] = useState<ImersaoDisponivel[]>([]);
   const [confirmando, setConfirmando] = useState<ImersaoDisponivel | null>(null);
 
-  const imersoesMesmoTipo = atual
-    ? imersoes.filter((im) => im.tipo.idTipo === atual.tipoId)
-    : [];
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const [minhas, disp] = await Promise.all([
           api.get<{ inscricoes: MinhaInscricao[] }>('/api/me/inscricoes'),
-          api.get<{ imersoes: ImersaoDisponivel[] }>('/api/imersoes/disponiveis'),
+          api.get<{ imersoes: ImersaoDisponivel[] }>(
+            `/api/me/inscricoes/${idAtual}/opcoes-reagendamento`,
+          ),
         ]);
         if (cancelled) return;
         const found = minhas.inscricoes.find((i) => i.idImersao === idAtual) ?? null;
@@ -135,7 +133,7 @@ export default function ReagendarLista() {
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-        ) : imersoesMesmoTipo.length === 0 ? (
+        ) : imersoes.length === 0 ? (
           <div className="mt-6 flex flex-col items-center text-center">
             <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground">
               <CalendarX2 className="size-6" strokeWidth={1.6} />
@@ -150,7 +148,7 @@ export default function ReagendarLista() {
           </div>
         ) : (
           <ul className="space-y-3">
-            {imersoesMesmoTipo.map((im) => {
+            {imersoes.map((im) => {
               const submitting = submittingId === im.idImersao;
               return (
                 <li key={im.idImersao}>

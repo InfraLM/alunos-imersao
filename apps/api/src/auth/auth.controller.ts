@@ -18,6 +18,7 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 import { firstName } from '../common/utils/cpf';
 import { LovablePrismaService } from '../prisma/lovable-prisma.service';
+import { STATUS_PENDENTES_MULTA } from '../imersoes/status.constants';
 
 const COOKIE_NAME = 'imersao_session';
 
@@ -77,6 +78,17 @@ export class AuthController {
       where: { matricula: user.matricula, punicaoFim: { gte: new Date() } },
       select: { motivo: true },
     });
+    // Pendência de multa: linha em status 4/5 ainda não paga. Sem filtro de
+    // data — casa com o gate de checarBloqueiosOuLancar (a multa é uma dívida
+    // e bloqueia mesmo depois da imersão passar).
+    const pendenciaMulta = await this.lovable.pfImersoesAgendamento.findFirst({
+      where: {
+        matricula: user.matricula,
+        status: { in: STATUS_PENDENTES_MULTA },
+        pagouMulta: false,
+      },
+      select: { idImersao: true },
+    });
     return {
       matricula: user.matricula,
       nome: user.nome,
@@ -86,6 +98,7 @@ export class AuthController {
       bloqueios: {
         inadimplente: /inadimplent/i.test(aluno?.statusFinanceiro ?? ''),
         punicao: !!punicao,
+        pendenciaMulta: !!pendenciaMulta,
       },
     };
   }

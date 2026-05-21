@@ -53,6 +53,7 @@ export default function Home() {
         <StatusBanner
           inadimplente={user?.bloqueios?.inadimplente}
           punicao={user?.bloqueios?.punicao}
+          pendenciaMulta={user?.bloqueios?.pendenciaMulta}
         />
       </div>
 

@@ -71,6 +71,7 @@ export default function AgendarLista() {
         <StatusBanner
           inadimplente={user?.bloqueios?.inadimplente}
           punicao={user?.bloqueios?.punicao}
+          pendenciaMulta={user?.bloqueios?.pendenciaMulta}
         />
       </div>
 

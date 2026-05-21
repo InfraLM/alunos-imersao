@@ -6,7 +6,7 @@ import { ContactCard } from '@/components/ContactCard';
 
 interface NavState {
   acao?: 'cancelar' | 'reagendar' | 'inscrever';
-  motivo?: 'inadimplente' | 'punicao';
+  motivo?: 'inadimplente' | 'punicao' | 'pendencia_multa';
   diasRestantes?: number;
 }
 
@@ -40,6 +40,14 @@ function getConteudo(state: NavState): Conteudo {
       titulo: 'Restrição vigente',
       alertTitulo: 'Você possui uma restrição ativa',
       alertCorpo: `Para ${acaoVerbo} uma imersão neste momento, entre em contato com o suporte.`,
+    };
+  }
+  if (state.motivo === 'pendencia_multa') {
+    return {
+      titulo: 'Multa pendente',
+      alertTitulo: 'Você tem uma multa pendente',
+      alertCorpo:
+        'Há uma multa de um reagendamento ou cancelamento aguardando pagamento. Para voltar a agendar, reagendar ou cancelar imersões, regularize com o suporte.',
     };
   }
   return {
