@@ -115,7 +115,7 @@ export class MailService {
     estado,
     linkGrupoWhatsapp,
   }: ConfirmacaoImersaoPayload): Promise<void> {
-    const acao = modo === 'reagendamento' ? 'Reagendamento confirmado' : 'Inscricao confirmada';
+    const acao = modo === 'reagendamento' ? 'Reagendamento confirmado' : 'Inscrição confirmada';
     const subject = `${acao} - ${tipoImersao}`;
     const fimDeSemana = formatarFimDeSemanaEmail(dataImersao);
     const localTexto = formatarLocalEmail(local, cidade, estado);
@@ -128,10 +128,13 @@ export class MailService {
       linkGrupoWhatsapp,
     });
     const text =
-      `Ola, ${primeiroNome}! ${acao} para a imersao de ${tipoImersao}. ` +
+      `Olá, ${primeiroNome}! ${acao} para a imersão de ${tipoImersao}. ` +
       `Quando: ${fimDeSemana}.` +
       (localTexto ? ` Local: ${localTexto}.` : '') +
-      (linkGrupoWhatsapp ? ` Grupo do WhatsApp: ${linkGrupoWhatsapp}` : '');
+      ' Assista à Aula Prévia disponível na plataforma antes da imersão. ' +
+      'A presença é obrigatória nos dois dias para a emissão do Certificado. ' +
+      'Desmarcação com menos de 5 dias de antecedência e reagendamento com menos de 15 dias da nova data têm taxa de R$700.' +
+      (linkGrupoWhatsapp ? ` Entre no grupo da sua turma no WhatsApp: ${linkGrupoWhatsapp}` : '');
 
     let providerId: string | null = null;
     let status: 'sent' | 'failed' = 'sent';
@@ -308,19 +311,20 @@ function confirmacaoImersaoHtmlTemplate({
     : '';
   const botaoWhatsapp = linkGrupoWhatsapp
     ? `<tr>
-         <td style="padding:8px 32px 4px 32px;">
+         <td style="padding:4px 32px 0 32px;">
            <a href="${escapeHtml(linkGrupoWhatsapp)}" style="display:block;background:#25D366;color:#ffffff;text-decoration:none;text-align:center;font-size:15px;font-weight:600;padding:15px;border-radius:10px;">
              Entrar no grupo do WhatsApp
            </a>
-           <p style="color:#9ca3af;font-size:12px;line-height:1.5;margin:10px 0 0 0;text-align:center;">
-             Entre no grupo para receber os avisos e o material da imersao.
-           </p>
          </td>
        </tr>`
     : '';
 
   return `<!doctype html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
   <body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr>
@@ -328,15 +332,15 @@ function confirmacaoImersaoHtmlTemplate({
           <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;max-width:100%;box-shadow:0 1px 3px rgba(0,0,0,.06);">
             <tr>
               <td style="background:#0A0A0A;padding:28px 32px;">
-                <div style="font-size:13px;color:#a1a1aa;letter-spacing:.06em;text-transform:uppercase;">Imersoes LM</div>
+                <div style="font-size:13px;color:#a1a1aa;letter-spacing:.06em;text-transform:uppercase;">Imersões LM</div>
                 <div style="font-size:24px;color:#fafafa;font-weight:600;margin-top:6px;">${escapeHtml(acao)}</div>
               </td>
             </tr>
             <tr>
               <td style="padding:28px 32px 8px 32px;">
-                <h1 style="font-size:20px;color:#111827;margin:0 0 8px 0;">Ola, ${escapeHtml(primeiroNome)}</h1>
+                <h1 style="font-size:20px;color:#111827;margin:0 0 8px 0;">Olá, ${escapeHtml(primeiroNome)}</h1>
                 <p style="color:#374151;line-height:1.55;font-size:15px;margin:0 0 20px 0;">
-                  Sua vaga na imersao abaixo esta garantida. Guarde este e-mail com os detalhes.
+                  Sua vaga na imersão abaixo está garantida. Guarde este e-mail com os detalhes.
                 </p>
               </td>
             </tr>
@@ -345,7 +349,7 @@ function confirmacaoImersaoHtmlTemplate({
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;">
                   <tr>
                     <td style="padding:14px 20px;">
-                      <div style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;">Imersao</div>
+                      <div style="font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;">Imersão</div>
                       <div style="font-size:17px;color:#111827;font-weight:600;margin-top:3px;">${escapeHtml(tipoImersao)}</div>
                     </td>
                   </tr>
@@ -359,18 +363,60 @@ function confirmacaoImersaoHtmlTemplate({
                 </table>
               </td>
             </tr>
-            <tr><td style="height:18px;"></td></tr>
+            <tr>
+              <td style="padding:26px 32px 0 32px;">
+                <div style="font-size:15px;color:#111827;font-weight:600;margin:0 0 6px 0;">Prepare-se agora</div>
+                <p style="color:#374151;line-height:1.6;font-size:14px;margin:0;">
+                  Para aproveitar 100% da experiência prática, é fundamental que você assista à <strong>Aula Prévia</strong> já disponível na nossa plataforma. Chegar com a base teórica fresca potencializa seu desempenho.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 32px 0 32px;">
+                <div style="font-size:15px;color:#111827;font-weight:600;margin:0 0 8px 0;">Informações importantes</div>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;">
+                  <tr>
+                    <td style="padding:12px 16px;color:#374151;line-height:1.55;font-size:14px;">
+                      <strong style="color:#111827;">Presença:</strong> A imersão ocorre em ambos os dias. É obrigatório estar presente do início ao fim para a emissão do seu Certificado.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px;border-top:1px solid #eef0f2;color:#374151;line-height:1.55;font-size:14px;">
+                      <strong style="color:#111827;">Financeiro:</strong> Para participar, o aluno deve estar em dia com suas obrigações financeiras.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px;border-top:1px solid #eef0f2;color:#374151;line-height:1.55;font-size:14px;">
+                      <strong style="color:#111827;">Desmarcação:</strong> Caso precise desmarcar, pedimos o aviso com pelo menos 5 dias de antecedência. Após esse prazo, será aplicada uma taxa de R$700.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 16px;border-top:1px solid #eef0f2;color:#374151;line-height:1.55;font-size:14px;">
+                      <strong style="color:#111827;">Reagendamento:</strong> Para transferir a data com menos de 15 dias de antecedência da nova data, haverá uma taxa de transferência de R$700.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:22px 32px 18px 32px;">
+                <div style="font-size:15px;color:#111827;font-weight:600;margin:0 0 6px 0;">Próximos passos</div>
+                <p style="color:#374151;line-height:1.6;font-size:14px;margin:0;">
+                  Agora, basta entrar no grupo exclusivo da sua turma no WhatsApp para receber as orientações finais.
+                </p>
+              </td>
+            </tr>
             ${botaoWhatsapp}
             <tr>
-              <td style="padding:22px 32px 28px 32px;">
-                <p style="color:#6b7280;font-size:13px;line-height:1.55;margin:0;">
-                  Precisa cancelar ou reagendar? Faca isso pelo portal, em "Minhas inscricoes".
+              <td style="padding:24px 32px 28px 32px;">
+                <p style="color:#111827;font-size:14px;line-height:1.55;margin:0;font-weight:600;">
+                  Estamos ansiosos para ver sua evolução na prática. Até breve.
                 </p>
               </td>
             </tr>
             <tr>
               <td style="padding:16px 32px 28px 32px;border-top:1px solid #f1f5f9;">
-                <div style="color:#9ca3af;font-size:12px;">Liberdade Medica Edu &middot; Pos-Graduacao</div>
+                <div style="color:#9ca3af;font-size:12px;">Liberdade Médica Edu &middot; Pós-Graduação</div>
               </td>
             </tr>
           </table>
